@@ -23,11 +23,7 @@ public class CastingTime {
     @Column(name = "condition")
     private String condition;
 
-    @OneToMany(targetEntity = Spell.class)
-    private List<Spell> spells;
-
     public CastingTime() {
-        spells = new ArrayList<>();
     }
 
     public CastingTime(String number, String unit, String condition) {
@@ -66,13 +62,5 @@ public class CastingTime {
 
     public void setCondition(String condition) {
         this.condition = condition;
-    }
-
-    public List<Spell> getSpells() {
-        return spells;
-    }
-
-    public void setSpells(List<Spell> spells) {
-        this.spells = spells;
     }
 }

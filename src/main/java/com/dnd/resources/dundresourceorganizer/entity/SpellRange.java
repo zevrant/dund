@@ -17,7 +17,7 @@ public class SpellRange {
     private String type;
 
     @OneToOne
-    @JoinColumn(name = "distance")
+    @JoinColumn(name = "distance_id")
     private Distance distance;
 
     public SpellRange() {

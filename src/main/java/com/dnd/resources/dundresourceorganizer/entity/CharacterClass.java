@@ -14,9 +14,6 @@ public class CharacterClass {
     @Column(name = "source", nullable = false)
     private String source;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subclassName")
-    private List<Subclass> subclass;
-
     public CharacterClass() {
     }
 
@@ -36,11 +33,4 @@ public class CharacterClass {
         this.source = source;
     }
 
-    public List<Subclass> getSubclass() {
-        return subclass;
-    }
-
-    public void setSubclass(List<Subclass> subclass) {
-        this.subclass = subclass;
-    }
 }

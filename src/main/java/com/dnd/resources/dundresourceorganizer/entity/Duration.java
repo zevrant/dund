@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "duration", schema = "dund")
+@Table(name = "durations", schema = "dund")
 public class Duration {
 
     @Id
@@ -13,14 +13,18 @@ public class Duration {
     @Column(name = "id", nullable = false)
     private long id;
 
-    @Column(name = "type")
+    @Column(name = "duration_type")
     private String type;
 
     @Column(name = "condition")
     private String condition;
 
-    @ManyToMany(targetEntity = EndCondition.class)
-    private List<String> ends;
+    @ManyToMany(targetEntity = EndCondition.class, fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinTable(name = "DURATION_END_JOIN", joinColumns = {
+            @JoinColumn(name = "end_condition_id", nullable = false, updatable = false) },
+            inverseJoinColumns = { @JoinColumn(name = "duration_id",
+                    nullable = false) })
+    private List<EndCondition> ends;
 
     @Column(name = "concentration")
     private boolean concentration;
@@ -35,6 +39,14 @@ public class Duration {
     private boolean upTo;
 
     public Duration() {
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getType() {
@@ -53,11 +65,11 @@ public class Duration {
         this.condition = condition;
     }
 
-    public List<String> getEnds() {
+    public List<EndCondition> getEnds() {
         return ends;
     }
 
-    public void setEnds(List<String> ends) {
+    public void setEnds(List<EndCondition> ends) {
         this.ends = ends;
     }
 

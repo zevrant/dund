@@ -9,10 +9,14 @@ import java.util.List;
 public class EndCondition {
 
     @Id
-    @Column(name = "end_condition_id")
+    @Column(name = "id")
     private long id;
 
-    @ManyToMany(targetEntity = Duration.class)
+    @ManyToMany(targetEntity = Duration.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "DURATION_END_JOIN", joinColumns = {
+            @JoinColumn(name = "duration_id", nullable = false, updatable = false) },
+            inverseJoinColumns = { @JoinColumn(name = "end_condition_id",
+                    nullable = false, updatable = false) })
     private List<Duration> durations;
 
     @Column(name = "endCondition")

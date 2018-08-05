@@ -6,6 +6,7 @@ import com.dnd.resources.dundresourceorganizer.repository.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.transaction.Transactional;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -67,7 +69,7 @@ public class Importer {
 ////    }
 
     @RequestMapping("/test")
-    @Transactional(rollbackOn = Throwable.class)
+//    @Transactional(rollbackOn = Throwable.class)
     public void importJson() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 
@@ -89,8 +91,11 @@ public class Importer {
         spell.setClasses(mapClasses(spellDTO.getClasses()));
         spell.setSource(spellDTO.getSource());
         spell.setDescription(mapEntries(spellDTO.getEntries()));
-        spell.setRitual(spellDTO.getMeta().getRitual());
-        spell.setTechnomagic(spellDTO.getMeta().isTechnomagic());
+        if(spellDTO.getMeta() != null) {
+            spell.setRitual(spellDTO.getMeta().getRitual());
+            spell.setTechnomagic(spellDTO.getMeta().isTechnomagic());
+        }
+        castingTimeRepository.saveAndFlush(spell.getCastingTime());
         spellRepository.save(spell);
     }
 
@@ -115,7 +120,6 @@ public class Importer {
             CharacterClass characterClass = new CharacterClass();
             characterClass.setName(classDTO.getName());
             characterClass.setSource(classDTO.getSource());
-            characterClass.setSubclass(mapSubClasses(characterClass, classes.getFromSubclass()));
             classList.add(characterClass);
         });
         return characterClassRepository.saveAll(classList);
@@ -142,8 +146,29 @@ public class Importer {
         duration.setCondition(durationDTO.getCondition());
         duration.setConcentration(durationDTO.isConcentration());
         duration.setType(durationDTO.getType());
-        duration.setEnds(durationDTO.getEnds());
-        return durationRepository.save(mapDuration(duration, durationDTO.getDuration()));
+        duration.setEnds(mapEndCondition(durationDTO.getEnds()));
+        Duration dbDuration = durationRepository.findOne(duration.getAmount(), duration.getCondition(), duration.getType(), duration.getSubType());
+        if(dbDuration == null) {
+            return durationRepository.save(mapDuration(duration, durationDTO.getDuration()));
+        }
+        return dbDuration;
+    }
+
+    private List<EndCondition> mapEndCondition(List<String> ends) {
+        if(ends == null){
+            return Collections.emptyList();
+        }
+        List<EndCondition> endConditions = new ArrayList<>();
+        ends.forEach(end -> {
+            EndCondition endCondition = new EndCondition();
+            endCondition.setEndCondition(end);
+            EndCondition dbCondition = endConditionRepository.findOne(endCondition.getEndCondition());
+            if(dbCondition == null) {
+                endCondition = endConditionRepository.save(endCondition);
+            }
+            endConditions.add(endCondition);
+        });
+        return endConditions;
     }
 
     private Duration mapDuration(Duration duration, DurationDTO durationDTO) {
@@ -179,14 +204,34 @@ public class Importer {
         SpellRange spellRange = new SpellRange();
         spellRange.setDistance(mapDistance(range.getDistance()));
         spellRange.setType(range.getType());
-        return spellRangeRepository.save(spellRange);
+        SpellRange dbRange = null;
+        if(spellRange.getDistance() != null) {
+            Distance distance = distanceRepository.findOne(spellRange.getDistance().getAmount(), spellRange.getDistance().getType());
+            dbRange = spellRangeRepository.findOne(distance.getId(), spellRange.getType());
+        }
+//        if(distance != null) {
+
+        if(dbRange == null){
+            return spellRangeRepository.save(spellRange);
+        }
+//        }
+
+        return dbRange;
     }
 
     private Distance mapDistance(DistanceDTO distanceDTO) {
+        if(distanceDTO == null){
+            return null;
+        }
         Distance distance = new Distance();
         distance.setAmount(distanceDTO.getAmount());
         distance.setType(distanceDTO.getType());
-        return distanceRepository.save(distance);
+        Distance dbDistance = distanceRepository.findOne(distance.getAmount(), distance.getType());
+        if(dbDistance == null) {
+            distance = distanceRepository.save(distance);
+            return distance;
+        }
+        return dbDistance;
     }
 
     private CastingTime mapCastTime(Spell spell, TimeDTO time) {
@@ -194,8 +239,10 @@ public class Importer {
         castingTime.setNumber(time.getNumber());
         castingTime.setUnit(time.getUnit());
         castingTime.setCondition(time.getCondition());
-        castingTime = castingTimeRepository.save(castingTime);
-        castingTime.getSpells().add(spell);
+        Boolean exists = castingTimeRepository.castingTimeExists(castingTime.getNumber(), castingTime.getUnit(), castingTime.getCondition());
+        if(!ObjectUtils.defaultIfNull(exists, true)) {
+            castingTime = castingTimeRepository.saveAndFlush(castingTime);
+        }
         return castingTime;
     }
 }

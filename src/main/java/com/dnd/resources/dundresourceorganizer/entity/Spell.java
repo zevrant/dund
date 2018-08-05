@@ -13,7 +13,7 @@ public class Spell {
     @Column(name = "id", nullable = false)
     private long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 256)
     private String name;
 
     @ManyToOne(targetEntity = CastingTime.class)
@@ -21,17 +21,17 @@ public class Spell {
     private CastingTime castingTime;
 
     @ManyToMany(targetEntity = SpellComponent.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "component_join", joinColumns = {
+    @JoinTable(name = "component_spell_join", joinColumns = {
             @JoinColumn(name = "spell_id", nullable = false, updatable = false) },
             inverseJoinColumns = { @JoinColumn(name = "component_id",
                     nullable = false, updatable = false) })
     private List<SpellComponent> components;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "descript", nullable = false)
     private String description;
 
     @ManyToOne(targetEntity = Duration.class)
-    @JoinColumn(name = "duration", nullable = false)
+    @JoinColumn(name = "spell_duration", nullable = false)
     private Duration duration;
 
     @Column(name = "spell_level", nullable = false)
@@ -48,7 +48,7 @@ public class Spell {
     @JoinTable(name = "spell_class_join", joinColumns = {
             @JoinColumn(name = "spell_id", nullable = false, updatable = false) },
             inverseJoinColumns = { @JoinColumn(name = "name",
-                    nullable = false, updatable = false) })
+                    nullable = false, updatable = false) }, schema = "dund")
     private List<CharacterClass> classes;
 
     @Column(name = "source")
