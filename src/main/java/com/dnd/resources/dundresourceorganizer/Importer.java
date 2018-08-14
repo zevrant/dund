@@ -1,6 +1,6 @@
 package com.dnd.resources.dundresourceorganizer;
 
-import com.dnd.resources.dundresourceorganizer.dto.*;
+import com.dnd.resources.dundresourceorganizer.dto.spellImport.*;
 import com.dnd.resources.dundresourceorganizer.entity.*;
 import com.dnd.resources.dundresourceorganizer.repository.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -10,11 +10,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import javax.transaction.Transactional;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,7 +66,7 @@ public class Importer {
 ////        return "trd";
 ////    }
 
-    @RequestMapping("/test")
+//    @RequestMapping("/test")
 //    @Transactional(rollbackOn = Throwable.class)
     public void importJson() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
@@ -96,6 +94,8 @@ public class Importer {
             spell.setTechnomagic(spellDTO.getMeta().isTechnomagic());
         }
         castingTimeRepository.saveAndFlush(spell.getCastingTime());
+
+        logger.error("SpellResponse: {} End Condition: {}", spell.getName(), spell.getDuration().getEnds());
         spellRepository.save(spell);
     }
 
@@ -149,9 +149,10 @@ public class Importer {
         duration.setEnds(mapEndCondition(durationDTO.getEnds()));
         Duration dbDuration = durationRepository.findOne(duration.getAmount(), duration.getCondition(), duration.getType(), duration.getSubType());
         if(dbDuration == null) {
-            return durationRepository.save(mapDuration(duration, durationDTO.getDuration()));
+            return durationRepository.saveAndFlush(mapDuration(duration, durationDTO.getDuration()));
+        }else {
+            return durationRepository.saveAndFlush(dbDuration);
         }
-        return dbDuration;
     }
 
     private List<EndCondition> mapEndCondition(List<String> ends) {
@@ -164,7 +165,9 @@ public class Importer {
             endCondition.setEndCondition(end);
             EndCondition dbCondition = endConditionRepository.findOne(endCondition.getEndCondition());
             if(dbCondition == null) {
-                endCondition = endConditionRepository.save(endCondition);
+                endCondition = endConditionRepository.saveAndFlush(endCondition);
+            }else {
+                endCondition = dbCondition;
             }
             endConditions.add(endCondition);
         });

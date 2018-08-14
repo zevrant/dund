@@ -1,6 +1,4 @@
-package com.dnd.resources.dundresourceorganizer.dto;
-
-import com.dnd.resources.dundresourceorganizer.entity.Spell;
+package com.dnd.resources.dundresourceorganizer.dto.spellImport;
 
 import java.util.List;
 

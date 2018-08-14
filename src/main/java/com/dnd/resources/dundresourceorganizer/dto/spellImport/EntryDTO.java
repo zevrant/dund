@@ -1,4 +1,4 @@
-package com.dnd.resources.dundresourceorganizer.dto;
+package com.dnd.resources.dundresourceorganizer.dto.spellImport;
 
 import com.dnd.resources.dundresourceorganizer.config.EntryDTODeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

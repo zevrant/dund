@@ -1,4 +1,4 @@
-package com.dnd.resources.dundresourceorganizer.dto;
+package com.dnd.resources.dundresourceorganizer.dto.spellImport;
 
 
 import java.util.List;

@@ -9,15 +9,10 @@ import java.util.List;
 public class EndCondition {
 
     @Id
+    @SequenceGenerator(name = "end_condition_sequence", sequenceName = "end_condition_sequence", schema = "dund", initialValue = 10, allocationSize=99999999)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "end_condition_sequence")
     @Column(name = "id")
     private long id;
-
-    @ManyToMany(targetEntity = Duration.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "DURATION_END_JOIN", joinColumns = {
-            @JoinColumn(name = "duration_id", nullable = false, updatable = false) },
-            inverseJoinColumns = { @JoinColumn(name = "end_condition_id",
-                    nullable = false, updatable = false) })
-    private List<Duration> durations;
 
     @Column(name = "endCondition")
     private String endCondition;
@@ -31,14 +26,6 @@ public class EndCondition {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public List<Duration> getDurations() {
-        return durations;
-    }
-
-    public void setDurations(List<Duration> durations) {
-        this.durations = durations;
     }
 
     public String getEndCondition() {
